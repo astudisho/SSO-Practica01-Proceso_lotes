@@ -1,0 +1,47 @@
+﻿<Window x:Class="SSO_Practica01_Proceso_lotes.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SSO_Practica01_Proceso_lotes"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="482.591" Width="774.582">
+	<Grid>
+		<GroupBox x:Name="groupBox" Header="Nuevo proceso" HorizontalAlignment="Left" Height="229" Margin="10,15,0,0" VerticalAlignment="Top" Width="237">
+			<Grid>
+				<Label x:Name="label3" Content="Programador:" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
+				<TextBox x:Name="txbProgramador" HorizontalAlignment="Left" Height="23" Margin="100,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+
+				<Label x:Name="label" Content="Operando 1:" HorizontalAlignment="Left" Margin="5,30,0,0" VerticalAlignment="Top"/>
+				<ComboBox x:Name="cmbOperando1" HorizontalAlignment="Left" Margin="100,30,0,0" VerticalAlignment="Top" Width="56"/>
+
+				<Label x:Name="label1" Content="Operacion: " HorizontalAlignment="Left" Margin="5,60,0,0" VerticalAlignment="Top"/>
+				<ComboBox x:Name="cmbOperacion" HorizontalAlignment="Left" Margin="100,60,0,0" VerticalAlignment="Top" Width="56"/>
+
+				<Label x:Name="label2" Content="Operando 2:" HorizontalAlignment="Left" Margin="5,90,0,0" VerticalAlignment="Top"/>
+				<ComboBox x:Name="cmbOperando2" HorizontalAlignment="Left" Margin="100,90,0,0" VerticalAlignment="Top" Width="56"/>
+
+				<Label x:Name="label4" Content="Tiempo:" HorizontalAlignment="Left" Margin="5,120,0,0" VerticalAlignment="Top"/>
+				<ComboBox x:Name="cmbTiempoEstimado" HorizontalAlignment="Left" Margin="100,120,0,0" VerticalAlignment="Top" Width="56"/>
+
+				<Button x:Name="btnCrearProceso" Content="Crear proceso" HorizontalAlignment="Left" Margin="100,170,0,0" VerticalAlignment="Top" Width="93" Click="btnCrearProceso_Click"/>
+			</Grid>
+		</GroupBox>
+
+		<GroupBox x:Name="gpbCronometro" Header="Cronometro" HorizontalAlignment="Left" Margin="10,288,0,0" VerticalAlignment="Top" Height="126" Width="174">
+			<Grid>
+				<TextBox x:Name="txbCronometro" HorizontalAlignment="Left" Height="Auto" Margin="54,10,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="25"/>
+				<Button x:Name="btnIniciarCronometro" Content="Iniciar cronometro" HorizontalAlignment="Left" Margin="27,58,0,0" VerticalAlignment="Top" Width="107" Click="btnIniciarCronometro_Click"/>
+			</Grid>
+		</GroupBox>
+
+		<GroupBox x:Name="grbProcesos" Header="Procesos" HorizontalAlignment="Left" Height="207" Margin="252,230,0,0" VerticalAlignment="Top" Width="505">
+			<DataGrid x:Name="dgvProcesos" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491"/>
+		</GroupBox>
+
+		<GroupBox x:Name="grbLotes" Header="Lotes" HorizontalAlignment="Left" Height="207" Margin="252,15,0,0" VerticalAlignment="Top" Width="505">
+			<DataGrid x:Name="dgvLotes" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" />
+		</GroupBox>
+
+	</Grid>
+</Window>
