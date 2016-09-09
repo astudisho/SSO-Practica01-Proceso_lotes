@@ -23,11 +23,11 @@ namespace SSO_Practica01_Proceso_lotes
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public static int idProceso = 0;
+			
 		public static int segundos = 0;
+		public const int MAX_PROCESOS_LOTE = 5;
 
 		private BindingList<Lote> listaLotes;
-		private BindingList<Proceso> listaProceso;
 
 		private Lote loteActual;
 		private Proceso procesoActual;
@@ -69,9 +69,13 @@ namespace SSO_Practica01_Proceso_lotes
 			dt.Interval = new System.TimeSpan(0, 0, 1);
 
 			listaLotes = new BindingList<Lote>();
-			listaProceso = new BindingList<Proceso>();
+			dgvLotes.ItemsSource = listaLotes;
 
-			dgvProcesos.ItemsSource = listaProceso;
+			loteActual = new Lote();
+			listaLotes.Add(loteActual);
+			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
+
+			tiempoMaxEstimado = 0;
 		}
 
 		private void dispatcherTimer_Tick(object sender, EventArgs e)
@@ -83,7 +87,6 @@ namespace SSO_Practica01_Proceso_lotes
 
 			txbCronometro.Text = tiempo;
 
-			((DataGridRow)dgvProcesos.Items[0]).Background = new SolidColorBrush(Colors.Green);
 			//dgvProcesos.Items.Refresh();
 		}
 
@@ -94,9 +97,18 @@ namespace SSO_Practica01_Proceso_lotes
 			dt.Start();
 		}
 
+		private void actualizaGridView()
+		{
+			dgvLotes.ItemsSource = null;
+			dgvProcesos.ItemsSource = null;
+
+			dgvLotes.ItemsSource = listaLotes;
+			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
+		}
+
 		private void btnCrearProceso_Click(object sender, RoutedEventArgs e)
 		{
-			if ( txbProgramador.Text != "" )
+			if (txbProgramador.Text != "")
 			{
 				Proceso nuevoProceso = new Proceso
 					(
@@ -104,48 +116,80 @@ namespace SSO_Practica01_Proceso_lotes
 						cmbOperacion.SelectedItem.ToString(),
 						cmbOperando1.SelectedItem.ToString(),
 						cmbOperando2.SelectedItem.ToString(),
-						(int) cmbTiempoEstimado.SelectedItem
+						(int)cmbTiempoEstimado.SelectedItem
 					);
 
-				listaProceso.Add(nuevoProceso);
+
+				if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
+				{
+					Lote nuevoLote = new Lote();
+					nuevoLote.setProceso(nuevoProceso);
+					listaLotes.Add(nuevoLote);
+					loteActual = nuevoLote;
+				}
+				else
+				{
+					//MessageBox.Show("Agregado lote actual tiempo " + loteActual.ETA.ToString());
+					loteActual.setProceso(nuevoProceso);
+				}
+				actualizaGridView();
 			}
+			else
+				MessageBox.Show("Escriba un nombre de programador", "Datos faltantes");
 		}
 	}
 
 	class Proceso
 	{
-		public int id;
+		public static int idProceso = 1;
+
+		public int Id { get; set; }
 		public String Programador { get; set; }
 		public String Operador1 { get; set; }
 		public String Operacion { get; set; }
 		public String Operador2 { get; set; }
 		public float Resultado { get; set; }
-		public int TiempoEstimado { get; set; }
+		public int ETA { get; set; }
+		public bool Termino { get; set; }
 
-		public Proceso(String Programador, String operacion, String operador1, String operador2, int tiempoEstimado)
+		public Proceso(String Programador, String operacion, String operador1, String operador2, int ETA)
 		{
-			this.id = MainWindow.idProceso;
+			this.Id = idProceso;
 			this.Programador = Programador;
 			this.Operacion = operacion;
 			this.Operador1 = operador1;
 			this.Operador2 = operador2;
-			this.TiempoEstimado = tiempoEstimado;
-			MainWindow.idProceso++;
+			this.ETA = ETA;
+			this.Termino = false;
+			idProceso++;
 		}
 	}
 
 	class Lote
 	{
-		public List<Proceso> listaProcesos;
+		public static int idLote = 1;
+
+		public int Id { get; set; }
+		public int ETA { get; set; }
+		public bool Termino { get; set; }
+
+		private BindingList<Proceso> listaProcesos;
 
 		public Lote()
 		{
-			this.listaProcesos = new List<Proceso>();
+			this.listaProcesos = new BindingList<Proceso>();
+			this.Id = idLote;
+			this.ETA = 0;
+
+			idLote++;
 		}
 
 		public void setProceso(Proceso proceso)
 		{
+			ETA = ETA + proceso.ETA;
 			listaProcesos.Add(proceso);
 		}
+
+		public BindingList<Proceso> getListaProcesos() { return this.listaProcesos; }
 	}
 }
