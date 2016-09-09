@@ -119,7 +119,6 @@ namespace SSO_Practica01_Proceso_lotes
 						(int)cmbTiempoEstimado.SelectedItem
 					);
 
-
 				if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
 				{
 					Lote nuevoLote = new Lote();
@@ -136,6 +135,12 @@ namespace SSO_Practica01_Proceso_lotes
 			}
 			else
 				MessageBox.Show("Escriba un nombre de programador", "Datos faltantes");
+		}
+
+		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			//MessageBox.Show("Hola");
+			dgvProcesos.ItemsSource = ((Lote)dgvLotes.SelectedItem).getListaProcesos();
 		}
 	}
 

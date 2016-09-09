@@ -30,17 +30,20 @@
 
 		<GroupBox x:Name="gpbCronometro" Header="Cronometro" HorizontalAlignment="Left" Margin="10,252,0,0" VerticalAlignment="Top" Height="126" Width="237">
 			<Grid>
-				<TextBox x:Name="txbCronometro" HorizontalAlignment="Left" Height="Auto" Margin="12,10,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="20"/>
+				<TextBox x:Name="txbCronometro" HorizontalAlignment="Left" Height="Auto" Margin="107,0,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="20"/>
 				<Button x:Name="btnIniciarCronometro" Content="Iniciar cronometro" HorizontalAlignment="Left" Margin="107,78,0,0" VerticalAlignment="Top" Width="107" Click="btnIniciarCronometro_Click"/>
+				<Label x:Name="lbl4" Content="Tiempo Maximo:" Margin="0,5"/>
+				<Label x:Name="lbl5" Content="Lotes restantes:" Margin="0,30"/>
+				
 			</Grid>
 		</GroupBox>
 
 		<GroupBox x:Name="grbProcesos" Header="Procesos" HorizontalAlignment="Left" Height="207" Margin="252,230,0,0" VerticalAlignment="Top" Width="505">
-			<DataGrid x:Name="dgvProcesos" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsEnabled="False"/>
+			<DataGrid x:Name="dgvProcesos" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsReadOnly="True"/>
 		</GroupBox>
 
 		<GroupBox x:Name="grbLotes" Header="Lotes" HorizontalAlignment="Left" Height="207" Margin="252,15,0,0" VerticalAlignment="Top" Width="505">
-			<DataGrid x:Name="dgvLotes" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsEnabled="False" IsSynchronizedWithCurrentItem="False"/>
+			<DataGrid x:Name="dgvLotes"    HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsReadOnly="True" SelectionChanged="dgvLotes_SelectionChanged"/>
 		</GroupBox>
 
 	</Grid>
