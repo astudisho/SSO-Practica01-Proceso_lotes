@@ -25,9 +25,12 @@ namespace SSO_Practica01_Proceso_lotes
 	{
 			
 		public static int segundos = 0;
+		public static int tiempoTranscurrido = 0;
+		public static int globalMaximo = 0;
 		public const int MAX_PROCESOS_LOTE = 5;
 
-		private BindingList<Lote> listaLotes;
+
+		private List<Lote> listaLotes;
 
 		private Lote loteActual;
 		private Proceso procesoActual;
@@ -68,7 +71,7 @@ namespace SSO_Practica01_Proceso_lotes
 			dt.Tick += dispatcherTimer_Tick;
 			dt.Interval = new System.TimeSpan(0, 0, 1);
 
-			listaLotes = new BindingList<Lote>();
+			listaLotes = new List<Lote>();
 			dgvLotes.ItemsSource = listaLotes;
 
 			loteActual = new Lote();
@@ -87,12 +90,59 @@ namespace SSO_Practica01_Proceso_lotes
 
 			txbCronometro.Text = tiempo;
 
+			//Tiempo restante
+
+			var restante = procesoActual.ETA;
+
+			txbRestante.Text = (restante / 60).ToString().PadLeft(2, '0') + ":"
+							 + (restante % 60).ToString().PadLeft(2, '0');
+
+			txbTranscurrido.Text = (tiempoTranscurrido / 60).ToString().PadLeft(2, '0') + ":"
+									+ (tiempoTranscurrido % 60).ToString().PadLeft(2, '0');
+
+			procesoActual.ETA --;
+			tiempoTranscurrido++;
+
+
+			if (procesoActual.ETA <= 0)
+			{
+				var indice = loteActual.getListaProcesos().IndexOf(procesoActual);
+				if (indice < 4 && indice + 1< loteActual.getListaProcesos().Count)
+				{
+					procesoActual.Termino = true;
+					procesoActual.resolverEcuacion();
+					procesoActual = loteActual.getListaProcesos()[loteActual.getListaProcesos().IndexOf(procesoActual) + 1]; // Cambia de proceso
+					tiempoTranscurrido = 0;
+				}
+				else
+				{
+					procesoActual.Termino = true;
+					procesoActual.resolverEcuacion();
+					loteActual.Termino = true;
+
+					if (listaLotes.IndexOf(loteActual) + 1 < listaLotes.Count )
+					{
+						loteActual = listaLotes[listaLotes.IndexOf(loteActual) + 1];
+						procesoActual = loteActual.getListaProcesos()[0];
+						tiempoTranscurrido = 0;
+						//dgvLotes.SelectedItem = loteActual;
+					}
+					else
+						dt.Stop();
+				}
+			}
+
+			actualizaGridView();
+
 			//dgvProcesos.Items.Refresh();
 		}
 
 		private void btnIniciarCronometro_Click(object sender, RoutedEventArgs e)
 		{
 			btnIniciarCronometro.IsEnabled = false;
+
+			loteActual = listaLotes[0];
+			procesoActual = loteActual.getListaProcesos()[0];
 
 			dt.Start();
 		}
@@ -110,6 +160,14 @@ namespace SSO_Practica01_Proceso_lotes
 		{
 			if (txbProgramador.Text != "")
 			{
+				if (cmbOperacion.SelectedItem == "/" || cmbOperacion.SelectedItem == "%")
+				{
+					if (int.Parse(cmbOperando2.SelectedItem.ToString()) == 0)
+					{
+						MessageBox.Show("Division entre zero");
+						return;
+					}
+				}
 				Proceso nuevoProceso = new Proceso
 					(
 						txbProgramador.Text,
@@ -118,6 +176,8 @@ namespace SSO_Practica01_Proceso_lotes
 						cmbOperando2.SelectedItem.ToString(),
 						(int)cmbTiempoEstimado.SelectedItem
 					);
+
+				globalMaximo += nuevoProceso.ETA;
 
 				if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
 				{
@@ -131,10 +191,16 @@ namespace SSO_Practica01_Proceso_lotes
 					//MessageBox.Show("Agregado lote actual tiempo " + loteActual.ETA.ToString());
 					loteActual.setProceso(nuevoProceso);
 				}
+
+				loteActual.ETA += nuevoProceso.ETA;
+
 				actualizaGridView();
 			}
 			else
 				MessageBox.Show("Escriba un nombre de programador", "Datos faltantes");
+
+			txbMaximoGlobal.Text = (globalMaximo / 60 ).ToString().PadLeft(2,'0') + ":" +
+									(globalMaximo % 60 ).ToString().PadLeft(2,'0');
 		}
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -168,6 +234,40 @@ namespace SSO_Practica01_Proceso_lotes
 			this.Termino = false;
 			idProceso++;
 		}
+
+		public void resolverEcuacion()
+		{
+			int op1 = int.Parse(Operador1),
+				op2 = int.Parse(Operador2);
+
+			switch (Operacion)
+			{
+				case "+":
+					Resultado = op1 + op2;
+					break;
+				case "-":
+					Resultado = op1 - op2;
+					break;
+				case "*":
+					Resultado = op1 * op2;
+					break;
+				case "/":
+					Resultado = op1 / op2;
+					break;
+				case "%":
+					Resultado = op1 % op2;
+					break;
+				case "^":
+					Resultado = op1 ^ op2;
+					break;
+				case "%%":
+					Resultado = (op1 / 100) * op2;
+					break;
+				default:
+					Resultado = -1;
+					break;
+			}
+		}
 	}
 
 	class Lote
@@ -178,11 +278,11 @@ namespace SSO_Practica01_Proceso_lotes
 		public int ETA { get; set; }
 		public bool Termino { get; set; }
 
-		private BindingList<Proceso> listaProcesos;
+		private List<Proceso> listaProcesos;
 
 		public Lote()
 		{
-			this.listaProcesos = new BindingList<Proceso>();
+			this.listaProcesos = new List<Proceso>();
 			this.Id = idLote;
 			this.ETA = 0;
 
@@ -195,6 +295,6 @@ namespace SSO_Practica01_Proceso_lotes
 			listaProcesos.Add(proceso);
 		}
 
-		public BindingList<Proceso> getListaProcesos() { return this.listaProcesos; }
+		public List<Proceso> getListaProcesos() { return this.listaProcesos; }
 	}
 }

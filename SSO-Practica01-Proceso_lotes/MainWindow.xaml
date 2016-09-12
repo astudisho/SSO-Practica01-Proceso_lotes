@@ -28,13 +28,17 @@
 			</Grid>
 		</GroupBox>
 
-		<GroupBox x:Name="gpbCronometro" Header="Cronometro" HorizontalAlignment="Left" Margin="10,252,0,0" VerticalAlignment="Top" Height="126" Width="237">
-			<Grid>
-				<TextBox x:Name="txbCronometro" HorizontalAlignment="Left" Height="Auto" Margin="107,0,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="20"/>
-				<Button x:Name="btnIniciarCronometro" Content="Iniciar cronometro" HorizontalAlignment="Left" Margin="107,78,0,0" VerticalAlignment="Top" Width="107" Click="btnIniciarCronometro_Click"/>
-				<Label x:Name="lbl4" Content="Tiempo Maximo:" Margin="0,5"/>
-				<Label x:Name="lbl5" Content="Lotes restantes:" Margin="0,30"/>
-				
+		<GroupBox x:Name="gpbCronometro" Header="Cronometro" HorizontalAlignment="Left" Margin="10,252,0,0" VerticalAlignment="Top" Height="168" Width="237">
+			<Grid Height="Auto" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+				<Label x:Name="lbl4" Content="Transcurrido global:" Margin="0,5,0,-35" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+				<TextBox x:Name="txbCronometro" HorizontalAlignment="Left" Height="Auto" Margin="120,0,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="20"/>
+				<Button x:Name="btnIniciarCronometro" Content="Iniciar cronometro" HorizontalAlignment="Left" Margin="107,118,0,0" VerticalAlignment="Top" Width="107" Click="btnIniciarCronometro_Click"/>
+				<Label x:Name="lbl5" Content="Tiempo transcurrido:" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+				<TextBox x:Name="txbTranscurrido" HorizontalAlignment="Left" Height="Auto" Margin="120,30,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="18"/>
+				<Label x:Name="lbl6" Content="Tiempo restante:" Margin="0,60,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+				<TextBox x:Name="txbRestante" HorizontalAlignment="Left" Height="Auto" Margin="120,60,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="18"/>
+				<Label x:Name="lbl7" Content="Maximo global:" Margin="0,90,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+				<TextBox x:Name="txbMaximoGlobal" HorizontalAlignment="Left" Height="Auto" Margin="120,90,0,0" TextWrapping="Wrap" Text="00:00" VerticalAlignment="Top" Width="Auto" FontSize="18"/>
 			</Grid>
 		</GroupBox>
 
