@@ -29,7 +29,6 @@ namespace SSO_Practica01_Proceso_lotes
 		public static int globalMaximo = 0;
 		public const int MAX_PROCESOS_LOTE = 5;
 
-
 		private List<Lote> listaLotes;
 		private List<int> listaId;
 
@@ -38,6 +37,13 @@ namespace SSO_Practica01_Proceso_lotes
 		private int tiempoMaxEstimado;
 
 		DispatcherTimer dt;
+		Random rnd;
+
+		Dictionary<int, string> Operaciones = new Dictionary<int, string>()
+		{
+			{ 1,"+" },
+			{ 2,"-" }
+		};
 
 		public MainWindow()
 		{
@@ -60,12 +66,12 @@ namespace SSO_Practica01_Proceso_lotes
 
 			for (int i = 1; i < 30; i++)
 			{
-				cmbTiempoEstimado.Items.Add(i);
+				cmbNumeroProcesos.Items.Add(i);
 			}
 
 			cmbOperando1.SelectedIndex = 0;
 			cmbOperando2.SelectedIndex = 0;
-			cmbTiempoEstimado.SelectedIndex = 0;
+			cmbNumeroProcesos .SelectedIndex = 0;
 
 			dt = new DispatcherTimer();
 
@@ -76,6 +82,7 @@ namespace SSO_Practica01_Proceso_lotes
 			dgvLotes.ItemsSource = listaLotes;
 
 			listaId = new List<int>();
+			rnd = new Random();
 
 			loteActual = new Lote();
 			listaLotes.Add(loteActual);
@@ -109,35 +116,44 @@ namespace SSO_Practica01_Proceso_lotes
 
 			if (procesoActual.ETA <= 0)
 			{
-				var indice = loteActual.getListaProcesos().IndexOf(procesoActual);
-				if (indice < 4 && indice + 1< loteActual.getListaProcesos().Count)
-				{
-					procesoActual.Termino = true;
-					procesoActual.resolverEcuacion();
-					procesoActual = loteActual.getListaProcesos()[loteActual.getListaProcesos().IndexOf(procesoActual) + 1]; // Cambia de proceso
-					tiempoTranscurrido = 0;
-				}
-				else
-				{
-					procesoActual.Termino = true;
-					procesoActual.resolverEcuacion();
-					loteActual.Termino = true;
-
-					if (listaLotes.IndexOf(loteActual) + 1 < listaLotes.Count )
-					{
-						loteActual = listaLotes[listaLotes.IndexOf(loteActual) + 1];
-						procesoActual = loteActual.getListaProcesos()[0];
-						tiempoTranscurrido = 0;
-						//dgvLotes.SelectedItem = loteActual;
-					}
-					else
-						dt.Stop();
-				}
+				siguienteProceso();
 			}
 
 			actualizaGridView();
 
 			//dgvProcesos.Items.Refresh();
+		}
+
+		private void siguienteProceso()
+		{
+			var indice = loteActual.getListaProcesos().IndexOf(procesoActual);
+			if (indice < 4 && indice + 1 < loteActual.getListaProcesos().Count)
+			{
+				procesoActual.Termino = true;
+				procesoActual.resolverEcuacion();
+				procesoActual = loteActual.getListaProcesos()[loteActual.getListaProcesos().IndexOf(procesoActual) + 1]; // Cambia de proceso
+				tiempoTranscurrido = 0;
+			}
+			else
+			{
+				procesoActual.Termino = true;
+				procesoActual.resolverEcuacion();
+				loteActual.Termino = true;
+
+				if (listaLotes.IndexOf(loteActual) + 1 < listaLotes.Count)
+				{
+					loteActual = listaLotes[listaLotes.IndexOf(loteActual) + 1];
+					procesoActual = loteActual.getListaProcesos()[0];
+					tiempoTranscurrido = 0;
+					//dgvLotes.SelectedItem = loteActual;
+
+				}
+				else
+				{
+					dt.Stop();
+					cambiarEstadoDataGrid();
+				}
+			}
 		}
 
 		private void btnIniciarCronometro_Click(object sender, RoutedEventArgs e)
@@ -147,7 +163,11 @@ namespace SSO_Practica01_Proceso_lotes
 			loteActual = listaLotes[0];
 			procesoActual = loteActual.getListaProcesos()[0];
 
+			cambiarEstadoDataGrid();
+
 			dt.Start();
+
+			this.Focus();
 		}
 
 		private void actualizaGridView()
@@ -161,63 +181,74 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void btnCrearProceso_Click(object sender, RoutedEventArgs e)
 		{
-			if (txbProgramador.Text != "")
+			int numeroProcesos = int.Parse(cmbNumeroProcesos.SelectedItem.ToString());
+
+			for (int i = 0; i < numeroProcesos; i++)
 			{
-				if (cmbOperacion.SelectedItem == "/" || cmbOperacion.SelectedItem == "%")
-				{
-					if (int.Parse(cmbOperando2.SelectedItem.ToString()) == 0)
-					{
-						MessageBox.Show("Division entre zero");
-						return;
-					}
-				}
-
-				int id = int.Parse(txbId.Text);
-
-				if (listaId.Contains(id))
-				{
-					MessageBox.Show("El id ya existe");
-					return;
-				}
-
-				Proceso nuevoProceso = new Proceso
+				crearProceso
 					(
-						id,
-						txbProgramador.Text,
-						cmbOperacion.SelectedItem.ToString(),
-						cmbOperando1.SelectedItem.ToString(),
-						cmbOperando2.SelectedItem.ToString(),
-						(int)cmbTiempoEstimado.SelectedItem
+						"Astudillo",
+						cmbOperacion.Items[rnd.Next(0,cmbOperacion.Items.Count - 1 )].ToString(),
+						rnd.Next(100).ToString(),
+						rnd.Next(1,100).ToString(),
+						rnd.Next(1,15)
+					);
+			}
+
+			btnCrearProceso.IsEnabled = false;
+		}
+
+		private void crearProceso(string programador, string operacion, string operando1, string operando2, int tiempo)
+		{
+			Proceso nuevoProceso = new Proceso
+					(
+						programador,
+						operacion,
+						operando1,
+						operando2,
+						tiempo
 					);
 
-				listaId.Add(id);
+			//listaId.Add(id);
 
-				globalMaximo += nuevoProceso.ETA;
-
-				if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
-				{
-					Lote nuevoLote = new Lote();
-					nuevoLote.setProceso(nuevoProceso);
-					listaLotes.Add(nuevoLote);
-					loteActual = nuevoLote;
-				}
-				else
-				{
-					loteActual.setProceso(nuevoProceso);
-				}
-
-				actualizaGridView();
+			globalMaximo += nuevoProceso.ETA;
+			if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
+			{
+				Lote nuevoLote = new Lote();
+				nuevoLote.setProceso(nuevoProceso);
+				listaLotes.Add(nuevoLote);
+				loteActual = nuevoLote;
 			}
 			else
-				MessageBox.Show("Escriba un nombre de programador", "Datos faltantes");
+			{
+				loteActual.setProceso(nuevoProceso);
+			}
 
-			txbMaximoGlobal.Text = (globalMaximo / 60 ).ToString().PadLeft(2,'0') + ":" +
-									(globalMaximo % 60 ).ToString().PadLeft(2,'0');
+			actualizaGridView();
+
+			txbMaximoGlobal.Text =	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" +
+									(globalMaximo % 60).ToString().PadLeft(2, '0');
 		}
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			dgvProcesos.ItemsSource = ((Lote)dgvLotes.SelectedItem).getListaProcesos();
+		}
+
+		private void cambiarEstadoDataGrid()
+		{
+			dgvLotes.IsEnabled = !dgvLotes.IsEnabled;
+			dgvProcesos.IsEnabled = !dgvProcesos.IsEnabled;
+		}
+
+		private void cambiarEstadoGUI()
+		{
+			
+		}
+
+		private void Grid_KeyDown(object sender, KeyEventArgs e)
+		{
+			MessageBox.Show(e.Key.ToString());
 		}
 	}
 
@@ -234,10 +265,10 @@ namespace SSO_Practica01_Proceso_lotes
 		public int ETA { get; set; }
 		public bool Termino { get; set; }
 
-		public Proceso(int id, String Programador, String operacion, String operador1, String operador2, int ETA)
+		public Proceso(String Programador, String operacion, String operador1, String operador2, int ETA)
 		{
-			//this.Id = idProceso;
-			this.Id = id;
+			this.Id = idProceso;
+			//this.Id = id;
 			this.Programador = Programador;
 			this.Operacion = operacion;
 			this.Operador1 = operador1;

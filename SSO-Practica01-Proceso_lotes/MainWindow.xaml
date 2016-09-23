@@ -6,26 +6,26 @@
         xmlns:local="clr-namespace:SSO_Practica01_Proceso_lotes"
         mc:Ignorable="d"
         Title="MainWindow" Height="482.591" Width="774.582">
-	<Grid>
+	<Grid KeyDown="Grid_KeyDown">
 		<GroupBox x:Name="groupBox" Header="Nuevo proceso" HorizontalAlignment="Left" Height="229" Margin="10,15,0,0" VerticalAlignment="Top" Width="237">
 			<Grid>
 				<Label x:Name="label14" Content="Id: " HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Top"/>
-				<TextBox x:Name="txbId" HorizontalAlignment="Left" Height="18" Margin="100,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+				<TextBox x:Name="txbId" HorizontalAlignment="Left" Height="18" Margin="100,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" IsEnabled="False"/>
 
 				<Label x:Name="label3" Content="Programador:" HorizontalAlignment="Left" Margin="5,20,0,0" VerticalAlignment="Top"/>
-				<TextBox x:Name="txbProgramador" HorizontalAlignment="Left" Height="18" Margin="100,25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+				<TextBox x:Name="txbProgramador" HorizontalAlignment="Left" Height="18" Margin="100,25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" IsEnabled="False"/>
 
 				<Label x:Name="label" Content="Operando 1:" HorizontalAlignment="Left" Margin="5,50,0,0" VerticalAlignment="Top"/>
-				<ComboBox x:Name="cmbOperando1" HorizontalAlignment="Left" Margin="100,50,0,0" VerticalAlignment="Top" Width="56"/>
+				<ComboBox x:Name="cmbOperando1" HorizontalAlignment="Left" Margin="100,50,0,0" VerticalAlignment="Top" Width="56" IsEnabled="False"/>
 
 				<Label x:Name="label1" Content="Operacion: " HorizontalAlignment="Left" Margin="5,80,0,0" VerticalAlignment="Top"/>
-				<ComboBox x:Name="cmbOperacion" HorizontalAlignment="Left" Margin="100,80,0,0" VerticalAlignment="Top" Width="56"/>
+				<ComboBox x:Name="cmbOperacion" HorizontalAlignment="Left" Margin="100,80,0,0" VerticalAlignment="Top" Width="56" IsEnabled="False"/>
 
 				<Label x:Name="label2" Content="Operando 2:" HorizontalAlignment="Left" Margin="5,110,0,0" VerticalAlignment="Top"/>
-				<ComboBox x:Name="cmbOperando2" HorizontalAlignment="Left" Margin="100,110,0,0" VerticalAlignment="Top" Width="56"/>
+				<ComboBox x:Name="cmbOperando2" HorizontalAlignment="Left" Margin="100,110,0,0" VerticalAlignment="Top" Width="56" IsEnabled="False"/>
 
-				<Label x:Name="label4" Content="Tiempo:" HorizontalAlignment="Left" Margin="5,140,0,0" VerticalAlignment="Top"/>
-				<ComboBox x:Name="cmbTiempoEstimado" HorizontalAlignment="Left" Margin="100,140,0,0" VerticalAlignment="Top" Width="56"/>
+				<Label x:Name="label4" Content="Procesos:" HorizontalAlignment="Left" Margin="5,140,0,0" VerticalAlignment="Top"/>
+				<ComboBox x:Name="cmbNumeroProcesos" HorizontalAlignment="Left" Margin="100,140,0,0" VerticalAlignment="Top" Width="56"/>
 
 				<Button x:Name="btnCrearProceso" Content="Crear proceso" HorizontalAlignment="Left" Margin="100,170,0,0" VerticalAlignment="Top" Width="93" Click="btnCrearProceso_Click"/>
 			</Grid>
