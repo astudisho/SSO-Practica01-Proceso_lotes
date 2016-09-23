@@ -31,6 +31,7 @@ namespace SSO_Practica01_Proceso_lotes
 
 
 		private List<Lote> listaLotes;
+		private List<int> listaId;
 
 		private Lote loteActual;
 		private Proceso procesoActual;
@@ -73,6 +74,8 @@ namespace SSO_Practica01_Proceso_lotes
 
 			listaLotes = new List<Lote>();
 			dgvLotes.ItemsSource = listaLotes;
+
+			listaId = new List<int>();
 
 			loteActual = new Lote();
 			listaLotes.Add(loteActual);
@@ -168,14 +171,26 @@ namespace SSO_Practica01_Proceso_lotes
 						return;
 					}
 				}
+
+				int id = int.Parse(txbId.Text);
+
+				if (listaId.Contains(id))
+				{
+					MessageBox.Show("El id ya existe");
+					return;
+				}
+
 				Proceso nuevoProceso = new Proceso
 					(
+						id,
 						txbProgramador.Text,
 						cmbOperacion.SelectedItem.ToString(),
 						cmbOperando1.SelectedItem.ToString(),
 						cmbOperando2.SelectedItem.ToString(),
 						(int)cmbTiempoEstimado.SelectedItem
 					);
+
+				listaId.Add(id);
 
 				globalMaximo += nuevoProceso.ETA;
 
@@ -192,7 +207,7 @@ namespace SSO_Practica01_Proceso_lotes
 					loteActual.setProceso(nuevoProceso);
 				}
 
-				loteActual.ETA += nuevoProceso.ETA;
+				//loteActual.ETA += nuevoProceso.ETA;
 
 				actualizaGridView();
 			}
@@ -205,7 +220,6 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			//MessageBox.Show("Hola");
 			dgvProcesos.ItemsSource = ((Lote)dgvLotes.SelectedItem).getListaProcesos();
 		}
 	}
@@ -223,9 +237,10 @@ namespace SSO_Practica01_Proceso_lotes
 		public int ETA { get; set; }
 		public bool Termino { get; set; }
 
-		public Proceso(String Programador, String operacion, String operador1, String operador2, int ETA)
+		public Proceso(int id, String Programador, String operacion, String operador1, String operador2, int ETA)
 		{
-			this.Id = idProceso;
+			//this.Id = idProceso;
+			this.Id = id;
 			this.Programador = Programador;
 			this.Operacion = operacion;
 			this.Operador1 = operador1;
