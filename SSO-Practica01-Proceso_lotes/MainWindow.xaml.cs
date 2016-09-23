@@ -28,6 +28,7 @@ namespace SSO_Practica01_Proceso_lotes
 		public const int MAX_PROCESOS_LOTE = 5;
 
 		private BindingList<Lote> listaLotes;
+		private List<int> listaId;
 
 		private Lote loteActual;
 		private Proceso procesoActual;
@@ -71,6 +72,8 @@ namespace SSO_Practica01_Proceso_lotes
 			listaLotes = new BindingList<Lote>();
 			dgvLotes.ItemsSource = listaLotes;
 
+			listaId = new List<int>();
+
 			loteActual = new Lote();
 			listaLotes.Add(loteActual);
 			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
@@ -108,10 +111,19 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void btnCrearProceso_Click(object sender, RoutedEventArgs e)
 		{
-			if (txbProgramador.Text != "")
+			if (txbProgramador.Text != "" && txbId.Text != "")
 			{
+				int id = int.Parse(txbId.Text);
+
+				if (listaId.Contains(id))
+				{
+					MessageBox.Show("El id de proceso ya existe");
+					return;
+				}
+
 				Proceso nuevoProceso = new Proceso
 					(
+						int.Parse( txbId.Text ),
 						txbProgramador.Text,
 						cmbOperacion.SelectedItem.ToString(),
 						cmbOperando1.SelectedItem.ToString(),
@@ -119,6 +131,7 @@ namespace SSO_Practica01_Proceso_lotes
 						(int)cmbTiempoEstimado.SelectedItem
 					);
 
+				listaId.Add(id);
 
 				if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
 				{
@@ -152,9 +165,10 @@ namespace SSO_Practica01_Proceso_lotes
 		public int ETA { get; set; }
 		public bool Termino { get; set; }
 
-		public Proceso(String Programador, String operacion, String operador1, String operador2, int ETA)
+		public Proceso(int Id, String Programador, String operacion, String operador1, String operador2, int ETA)
 		{
-			this.Id = idProceso;
+			//this.Id = idProceso;
+			this.Id = Id;
 			this.Programador = Programador;
 			this.Operacion = operacion;
 			this.Operador1 = operador1;
