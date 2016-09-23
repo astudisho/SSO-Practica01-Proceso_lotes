@@ -203,11 +203,8 @@ namespace SSO_Practica01_Proceso_lotes
 				}
 				else
 				{
-					//MessageBox.Show("Agregado lote actual tiempo " + loteActual.ETA.ToString());
 					loteActual.setProceso(nuevoProceso);
 				}
-
-				//loteActual.ETA += nuevoProceso.ETA;
 
 				actualizaGridView();
 			}
