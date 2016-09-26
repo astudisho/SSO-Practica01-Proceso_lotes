@@ -35,15 +35,11 @@ namespace SSO_Practica01_Proceso_lotes
 		private Lote loteActual;
 		private Proceso procesoActual;
 		private int tiempoMaxEstimado;
+        private bool estaCorriendo,
+                     estaPausado;
 
 		DispatcherTimer dt;
 		Random rnd;
-
-		Dictionary<int, string> Operaciones = new Dictionary<int, string>()
-		{
-			{ 1,"+" },
-			{ 2,"-" }
-		};
 
 		public MainWindow()
 		{
@@ -88,6 +84,8 @@ namespace SSO_Practica01_Proceso_lotes
 			listaLotes.Add(loteActual);
 			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
 
+            estaPausado = estaCorriendo = false;
+            
 			tiempoMaxEstimado = 0;
 		}
 
@@ -152,6 +150,7 @@ namespace SSO_Practica01_Proceso_lotes
 				{
 					dt.Stop();
 					cambiarEstadoDataGrid();
+                    actualizaGridView();
 				}
 			}
 		}
@@ -168,6 +167,7 @@ namespace SSO_Practica01_Proceso_lotes
 			dt.Start();
 
 			this.Focus();
+            estaCorriendo = true;
 		}
 
 		private void actualizaGridView()
@@ -241,6 +241,20 @@ namespace SSO_Practica01_Proceso_lotes
 			dgvProcesos.IsEnabled = !dgvProcesos.IsEnabled;
 		}
 
+        private void mandarAlUltimo()
+        {
+            var indiceUltimo = loteActual.getListaProcesos().Count - 1;
+
+            Proceso tmp = loteActual.getListaProcesos()[indiceUltimo];
+            loteActual.getListaProcesos()[indiceUltimo] = procesoActual;
+
+            var indiceActual = loteActual.getListaProcesos().IndexOf(procesoActual);
+
+            loteActual.getListaProcesos()[indiceActual] = tmp;
+
+            procesoActual = tmp;
+        }    
+
 		private void cambiarEstadoGUI()
 		{
 			
@@ -248,11 +262,40 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void Grid_KeyDown(object sender, KeyEventArgs e)
 		{
-			MessageBox.Show(e.Key.ToString());
+			//MessageBox.Show(e.Key.ToString());
 		}
-	}
 
-	class Proceso
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            var procesoAnterior = procesoActual;
+
+            if (estaCorriendo && e.Key == Key.W)
+            {
+                siguienteProceso();
+                procesoAnterior.Resultado = "Error";
+            }
+            else if (estaCorriendo && e.Key == Key.P)
+            {
+                dt.Stop();
+                estaPausado = true;
+                //cambiarEstadoDataGrid();
+            }
+            else if ( estaPausado && e.Key == Key.C )
+            {
+                dt.Start();
+                estaPausado = false;
+                //cambiarEstadoDataGrid();
+            }
+
+            else if ( estaCorriendo && e.Key == Key.E)
+            {
+                mandarAlUltimo();
+
+            }
+        }
+    }
+
+    class Proceso
 	{
 		public static int idProceso = 1;
 
@@ -261,7 +304,7 @@ namespace SSO_Practica01_Proceso_lotes
 		public String Operador1 { get; set; }
 		public String Operacion { get; set; }
 		public String Operador2 { get; set; }
-		public float Resultado { get; set; }
+		public string Resultado { get; set; }
 		public int ETA { get; set; }
 		public bool Termino { get; set; }
 
@@ -286,28 +329,28 @@ namespace SSO_Practica01_Proceso_lotes
 			switch (Operacion)
 			{
 				case "+":
-					Resultado = op1 + op2;
+					Resultado = (op1 + op2).ToString();
 					break;
 				case "-":
-					Resultado = op1 - op2;
+					Resultado = (op1 - op2).ToString();
 					break;
 				case "*":
-					Resultado = op1 * op2;
+					Resultado = (op1 * op2).ToString();
 					break;
 				case "/":
-					Resultado = op1 / op2;
+					Resultado = (op1 / op2).ToString();
 					break;
 				case "%":
-					Resultado = op1 % op2;
+					Resultado = (op1 % op2).ToString();
 					break;
 				case "^":
-					Resultado = op1 ^ op2;
+					Resultado = (op1 ^ op2).ToString();
 					break;
 				case "%%":
-					Resultado = (op1 / 100) * op2;
+					Resultado = ((op1 / 100) * op2).ToString();
 					break;
 				default:
-					Resultado = -1;
+					Resultado = (-1).ToString();
 					break;
 			}
 		}
