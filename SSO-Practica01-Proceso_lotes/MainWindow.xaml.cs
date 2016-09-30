@@ -99,7 +99,7 @@ namespace SSO_Practica01_Proceso_lotes
 
 			txbRestante.Text = (restante / 60).ToString().PadLeft(2, '0') + ":"
 							 + (restante % 60).ToString().PadLeft(2, '0');
-
+			
 			txbTranscurrido.Text = (tiempoTranscurrido / 60).ToString().PadLeft(2, '0') + ":"
 									+ (tiempoTranscurrido % 60).ToString().PadLeft(2, '0');
 
