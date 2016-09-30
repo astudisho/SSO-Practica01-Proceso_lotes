@@ -50,9 +50,10 @@
 			<DataGrid x:Name="dgvProcesos" HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsReadOnly="True"/>
 		</GroupBox>
 
-		<GroupBox x:Name="grbLotes" Header="Lotes" HorizontalAlignment="Left" Height="207" Margin="252,15,0,0" VerticalAlignment="Top" Width="505">
+		<GroupBox x:Name="grbLotes" Header="Lotes" HorizontalAlignment="Left" Height="207" Margin="252,50,0,0" VerticalAlignment="Top" Width="505">
 			<DataGrid x:Name="dgvLotes"    HorizontalAlignment="Left" Height="152" Margin="4,11,-2,0" VerticalAlignment="Top" Width="491" IsReadOnly="True" SelectionChanged="dgvLotes_SelectionChanged"/>
 		</GroupBox>
+		<TextBlock x:Name="txbEstado" HorizontalAlignment="Left" Margin="473,15,0,0" TextWrapping="Wrap" Text="En espera" VerticalAlignment="Top" FontSize="20"/>
 
 	</Grid>
 </Window>

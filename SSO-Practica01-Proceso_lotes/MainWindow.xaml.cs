@@ -151,6 +151,7 @@ namespace SSO_Practica01_Proceso_lotes
 					dt.Stop();
 					cambiarEstadoDataGrid();
                     actualizaGridView();
+					txbEstado.Text = "Terminado";
 				}
 			}
 		}
@@ -168,6 +169,7 @@ namespace SSO_Practica01_Proceso_lotes
 
 			this.Focus();
             estaCorriendo = true;
+			txbEstado.Text = "Corriendo";
 		}
 
 		private void actualizaGridView()
@@ -278,19 +280,20 @@ namespace SSO_Practica01_Proceso_lotes
             {
                 dt.Stop();
                 estaPausado = true;
+				txbEstado.Text = "Pausado";
                 //cambiarEstadoDataGrid();
             }
             else if ( estaPausado && e.Key == Key.C )
             {
                 dt.Start();
                 estaPausado = false;
+				txbEstado.Text = "Corriendo";
                 //cambiarEstadoDataGrid();
             }
 
             else if ( estaCorriendo && e.Key == Key.E)
             {
                 mandarAlUltimo();
-
             }
         }
     }
