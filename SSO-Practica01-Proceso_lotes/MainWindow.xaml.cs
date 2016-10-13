@@ -23,7 +23,7 @@ namespace SSO_Practica01_Proceso_lotes
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-			
+			//Practica 03
 		public static int segundos = 0;
 		public static int tiempoTranscurrido = 0;
 		public static int globalMaximo = 0;
@@ -36,7 +36,8 @@ namespace SSO_Practica01_Proceso_lotes
 		private Proceso procesoActual;
 		private int tiempoMaxEstimado;
         private bool estaCorriendo,
-                     estaPausado;
+                     estaPausado,
+					 yaTermino;
 
 		DispatcherTimer dt;
 		Random rnd;
@@ -84,7 +85,7 @@ namespace SSO_Practica01_Proceso_lotes
 			listaLotes.Add(loteActual);
 			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
 
-            estaPausado = estaCorriendo = false;
+            yaTermino = estaPausado = estaCorriendo = false;
             
 			tiempoMaxEstimado = 0;
 		}
@@ -144,13 +145,14 @@ namespace SSO_Practica01_Proceso_lotes
 					procesoActual = loteActual.getListaProcesos()[0];
 					tiempoTranscurrido = 0;
 					//dgvLotes.SelectedItem = loteActual;
-
 				}
 				else
 				{
 					dt.Stop();
 					cambiarEstadoDataGrid();
                     actualizaGridView();
+					txbEstado.Text = "Terminado";
+					yaTermino = true;
 				}
 			}
 		}
@@ -168,6 +170,7 @@ namespace SSO_Practica01_Proceso_lotes
 
 			this.Focus();
             estaCorriendo = true;
+			txbEstado.Text = "Corriendo";
 		}
 
 		private void actualizaGridView()
@@ -226,8 +229,12 @@ namespace SSO_Practica01_Proceso_lotes
 
 			actualizaGridView();
 
-			txbMaximoGlobal.Text =	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" +
-									(globalMaximo % 60).ToString().PadLeft(2, '0');
+			txbMaximoGlobal.Text = segsToTime(globalMaximo);
+		}
+
+		private string segsToTime(int segundos)
+		{
+			return 	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" + (globalMaximo % 60).ToString().PadLeft(2, '0');
 		}
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -269,28 +276,34 @@ namespace SSO_Practica01_Proceso_lotes
         {
             var procesoAnterior = procesoActual;
 
-            if (estaCorriendo && e.Key == Key.W)
+			if (yaTermino)
+				return;
+
+            else if (estaCorriendo && e.Key == Key.W)
             {
+				globalMaximo -= procesoActual.ETA;
                 siguienteProceso();
                 procesoAnterior.Resultado = "Error";
+				txbMaximoGlobal.Text = segsToTime(globalMaximo);
             }
             else if (estaCorriendo && e.Key == Key.P)
             {
                 dt.Stop();
                 estaPausado = true;
+				txbEstado.Text = "Pausado";
                 //cambiarEstadoDataGrid();
             }
             else if ( estaPausado && e.Key == Key.C )
             {
                 dt.Start();
                 estaPausado = false;
+				txbEstado.Text = "Corriendo";
                 //cambiarEstadoDataGrid();
             }
 
             else if ( estaCorriendo && e.Key == Key.E)
             {
                 mandarAlUltimo();
-
             }
         }
     }
