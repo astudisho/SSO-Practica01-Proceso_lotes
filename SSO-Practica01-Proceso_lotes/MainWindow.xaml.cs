@@ -36,7 +36,8 @@ namespace SSO_Practica01_Proceso_lotes
 		private Proceso procesoActual;
 		private int tiempoMaxEstimado;
         private bool estaCorriendo,
-                     estaPausado;
+                     estaPausado,
+					 yaTermino;
 
 		DispatcherTimer dt;
 		Random rnd;
@@ -84,7 +85,7 @@ namespace SSO_Practica01_Proceso_lotes
 			listaLotes.Add(loteActual);
 			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
 
-            estaPausado = estaCorriendo = false;
+            yaTermino = estaPausado = estaCorriendo = false;
             
 			tiempoMaxEstimado = 0;
 		}
@@ -144,7 +145,6 @@ namespace SSO_Practica01_Proceso_lotes
 					procesoActual = loteActual.getListaProcesos()[0];
 					tiempoTranscurrido = 0;
 					//dgvLotes.SelectedItem = loteActual;
-
 				}
 				else
 				{
@@ -152,6 +152,7 @@ namespace SSO_Practica01_Proceso_lotes
 					cambiarEstadoDataGrid();
                     actualizaGridView();
 					txbEstado.Text = "Terminado";
+					yaTermino = true;
 				}
 			}
 		}
@@ -228,8 +229,12 @@ namespace SSO_Practica01_Proceso_lotes
 
 			actualizaGridView();
 
-			txbMaximoGlobal.Text =	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" +
-									(globalMaximo % 60).ToString().PadLeft(2, '0');
+			txbMaximoGlobal.Text = segsToTime(globalMaximo);
+		}
+
+		private string segsToTime(int segundos)
+		{
+			return 	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" + (globalMaximo % 60).ToString().PadLeft(2, '0');
 		}
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -271,10 +276,15 @@ namespace SSO_Practica01_Proceso_lotes
         {
             var procesoAnterior = procesoActual;
 
-            if (estaCorriendo && e.Key == Key.W)
+			if (yaTermino)
+				return;
+
+            else if (estaCorriendo && e.Key == Key.W)
             {
+				globalMaximo -= procesoActual.ETA;
                 siguienteProceso();
                 procesoAnterior.Resultado = "Error";
+				txbMaximoGlobal.Text = segsToTime(globalMaximo);
             }
             else if (estaCorriendo && e.Key == Key.P)
             {
