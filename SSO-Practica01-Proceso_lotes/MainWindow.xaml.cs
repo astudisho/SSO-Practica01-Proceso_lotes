@@ -23,7 +23,7 @@ namespace SSO_Practica01_Proceso_lotes
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-			
+			//Practica 03
 		public static int segundos = 0;
 		public static int tiempoTranscurrido = 0;
 		public static int globalMaximo = 0;
