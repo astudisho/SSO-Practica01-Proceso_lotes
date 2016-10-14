@@ -27,12 +27,11 @@ namespace SSO_Practica01_Proceso_lotes
 		public static int segundos = 0;
 		public static int tiempoTranscurrido = 0;
 		public static int globalMaximo = 0;
-		public const int MAX_PROCESOS_LOTE = 5;
+		public const int MAX_PROCESOS_LOTE = 5, TIEMPO_BLOQUEADO = 8;
 
-		private List<Lote> listaLotes;
 		private List<int> listaId;
+		private List<Proceso> fcsf, nuevos, listos, bloqueados, terminados, ejecucion;
 
-		private Lote loteActual;
 		private Proceso procesoActual;
 		private int tiempoMaxEstimado;
         private bool estaCorriendo,
@@ -66,6 +65,13 @@ namespace SSO_Practica01_Proceso_lotes
 				cmbNumeroProcesos.Items.Add(i);
 			}
 
+			fcsf = new List<Proceso>();
+			nuevos = new List<Proceso>();
+			listos = new List<Proceso>();
+			bloqueados = new List<Proceso>();
+			terminados = new List<Proceso>();
+			ejecucion = new List<Proceso>();
+
 			cmbOperando1.SelectedIndex = 0;
 			cmbOperando2.SelectedIndex = 0;
 			cmbNumeroProcesos .SelectedIndex = 0;
@@ -75,94 +81,113 @@ namespace SSO_Practica01_Proceso_lotes
 			dt.Tick += dispatcherTimer_Tick;
 			dt.Interval = new System.TimeSpan(0, 0, 1);
 
-			listaLotes = new List<Lote>();
-			dgvLotes.ItemsSource = listaLotes;
-
 			listaId = new List<int>();
 			rnd = new Random();
-
-			loteActual = new Lote();
-			listaLotes.Add(loteActual);
-			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
 
             yaTermino = estaPausado = estaCorriendo = false;
             
 			tiempoMaxEstimado = 0;
+
+			actualizaGridView();
 		}
 
 		private void dispatcherTimer_Tick(object sender, EventArgs e)
 		{
 			segundos++;
 
-			String tiempo =	(segundos / 60).ToString().PadLeft(2, '0') + ":" 
-						  + (segundos % 60).ToString().PadLeft(2,'0');
+			txbCronometro.Text = segsToTime(segundos);
 
-			txbCronometro.Text = tiempo;
+			//En ejecucion
+			procesoActual.TSer++;
 
-			//Tiempo restante
+			var restante = procesoActual.TME;
 
-			var restante = procesoActual.ETA;
+			txbRestante.Text = segsToTime(restante);
 
-			txbRestante.Text = (restante / 60).ToString().PadLeft(2, '0') + ":"
-							 + (restante % 60).ToString().PadLeft(2, '0');
+			txbTranscurrido.Text = segsToTime(tiempoTranscurrido);
 
-			txbTranscurrido.Text = (tiempoTranscurrido / 60).ToString().PadLeft(2, '0') + ":"
-									+ (tiempoTranscurrido % 60).ToString().PadLeft(2, '0');
-
-			procesoActual.ETA --;
+			procesoActual.TME --;
 			tiempoTranscurrido++;
 
 
-			if (procesoActual.ETA <= 0)
+			if (procesoActual.TME <= 0)
 			{
 				siguienteProceso();
 			}
+
+			procesaBloqueados();
 
 			actualizaGridView();
 
 			//dgvProcesos.Items.Refresh();
 		}
 
-		private void siguienteProceso()
+		private void procesaBloqueados()
 		{
-			var indice = loteActual.getListaProcesos().IndexOf(procesoActual);
-			if (indice < 4 && indice + 1 < loteActual.getListaProcesos().Count)
-			{
-				procesoActual.Termino = true;
-				procesoActual.resolverEcuacion();
-				procesoActual = loteActual.getListaProcesos()[loteActual.getListaProcesos().IndexOf(procesoActual) + 1]; // Cambia de proceso
-				tiempoTranscurrido = 0;
-			}
-			else
-			{
-				procesoActual.Termino = true;
-				procesoActual.resolverEcuacion();
-				loteActual.Termino = true;
+			List<Proceso> liberados = new List<Proceso>();
 
-				if (listaLotes.IndexOf(loteActual) + 1 < listaLotes.Count)
+			foreach (var proceso in bloqueados)
+			{
+				proceso.Bloq--;
+
+				if(proceso.Bloq <= 0 )
 				{
-					loteActual = listaLotes[listaLotes.IndexOf(loteActual) + 1];
-					procesoActual = loteActual.getListaProcesos()[0];
-					tiempoTranscurrido = 0;
-					//dgvLotes.SelectedItem = loteActual;
-				}
-				else
-				{
-					dt.Stop();
-					cambiarEstadoDataGrid();
-                    actualizaGridView();
-					txbEstado.Text = "Terminado";
-					yaTermino = true;
+					liberados.Add(proceso);
 				}
 			}
+
+			foreach (var liberado in liberados)
+			{
+				bloqueados.Remove(liberado);
+				listos.Add(liberado);
+			}
+		}
+
+		private void siguienteProceso( bool bloqueado = false)
+		{
+			if (!bloqueado)
+			{
+				procesoActual.termino(segundos);
+				terminados.Add(procesoActual);
+			}
+			ejecucion.Remove(procesoActual);
+
+			if (listos.Count > 0)
+			{
+				procesoActual = listos[0];
+
+				listos.Remove(procesoActual);
+
+				if (nuevos.Count > 0)
+				{
+					listos.Add(nuevos[0]);
+					nuevos.Remove(nuevos[0]);
+				}
+
+				ejecucion.Add(procesoActual);
+				procesoActual.ejecuto(segundos);
+			}
+			else if (bloqueados.Count <= 0)
+			{
+				dt.Stop();				
+				cambiarEstadoDataGrid();
+				txbEstado.Text = "Terminado";
+				yaTermino = true;
+			}			
+
+			actualizaGridView();
+
 		}
 
 		private void btnIniciarCronometro_Click(object sender, RoutedEventArgs e)
 		{
 			btnIniciarCronometro.IsEnabled = false;
 
-			loteActual = listaLotes[0];
-			procesoActual = loteActual.getListaProcesos()[0];
+			procesoActual = listos[0];
+
+			listos.Remove(procesoActual);
+			ejecucion.Add(procesoActual);
+			procesoActual.ejecuto(segundos);
 
 			cambiarEstadoDataGrid();
 
@@ -175,11 +200,17 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void actualizaGridView()
 		{
-			dgvLotes.ItemsSource = null;
-			dgvProcesos.ItemsSource = null;
+			dgvNuevos.ItemsSource = null;
+			dgvListos.ItemsSource = null;
+			dgvBloqueados.ItemsSource = null;
+			dgvTerminados.ItemsSource = null;
+			dgvEjecucion.ItemsSource = null;
 
-			dgvLotes.ItemsSource = listaLotes;
-			dgvProcesos.ItemsSource = loteActual.getListaProcesos();
+			dgvNuevos.ItemsSource = nuevos;
+			dgvListos.ItemsSource = listos;
+			dgvTerminados.ItemsSource = terminados;
+			dgvBloqueados.ItemsSource = bloqueados;
+			dgvEjecucion.ItemsSource = ejecucion;
 		}
 
 		private void btnCrearProceso_Click(object sender, RoutedEventArgs e)
@@ -190,23 +221,28 @@ namespace SSO_Practica01_Proceso_lotes
 			{
 				crearProceso
 					(
-						"Astudillo",
+						"A",
 						cmbOperacion.Items[rnd.Next(0,cmbOperacion.Items.Count - 1 )].ToString(),
 						rnd.Next(100).ToString(),
 						rnd.Next(1,100).ToString(),
 						rnd.Next(1,15)
 					);
+				if (i < 5)
+					listos.Add(fcsf[i]);
+				else
+					nuevos.Add(fcsf[i]);
 			}
 
 			btnCrearProceso.IsEnabled = false;
+			actualizaGridView();
 		}
 
-		private void crearProceso(string programador, string operacion, string operando1, string operando2, int tiempo)
+		private void crearProceso(string programador, string Op, string operando1, string operando2, int tiempo)
 		{
 			Proceso nuevoProceso = new Proceso
 					(
 						programador,
-						operacion,
+						Op,
 						operando1,
 						operando2,
 						tiempo
@@ -214,20 +250,9 @@ namespace SSO_Practica01_Proceso_lotes
 
 			//listaId.Add(id);
 
-			globalMaximo += nuevoProceso.ETA;
-			if (loteActual.getListaProcesos().Count >= MAX_PROCESOS_LOTE)
-			{
-				Lote nuevoLote = new Lote();
-				nuevoLote.setProceso(nuevoProceso);
-				listaLotes.Add(nuevoLote);
-				loteActual = nuevoLote;
-			}
-			else
-			{
-				loteActual.setProceso(nuevoProceso);
-			}
+			globalMaximo += nuevoProceso.TME;
 
-			actualizaGridView();
+			fcsf.Add(nuevoProceso);
 
 			txbMaximoGlobal.Text = segsToTime(globalMaximo);
 		}
@@ -239,27 +264,26 @@ namespace SSO_Practica01_Proceso_lotes
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			dgvProcesos.ItemsSource = ((Lote)dgvLotes.SelectedItem).getListaProcesos();
+			
 		}
 
 		private void cambiarEstadoDataGrid()
 		{
-			dgvLotes.IsEnabled = !dgvLotes.IsEnabled;
-			dgvProcesos.IsEnabled = !dgvProcesos.IsEnabled;
+			dgvNuevos.IsEnabled = !dgvNuevos.IsEnabled;
+			dgvListos.IsEnabled = !dgvNuevos.IsEnabled;
+			dgvBloqueados.IsEnabled = !dgvBloqueados.IsEnabled;
+			dgvTerminados.IsEnabled = !dgvTerminados.IsEnabled;
+			dgvEjecucion.IsEnabled = !dgvEjecucion.IsEnabled;
 		}
 
-        private void mandarAlUltimo()
+        private void mandarBloqueado()
         {
-            var indiceUltimo = loteActual.getListaProcesos().Count - 1;
+			procesoActual.Bloq = TIEMPO_BLOQUEADO;
 
-            Proceso tmp = loteActual.getListaProcesos()[indiceUltimo];
-            loteActual.getListaProcesos()[indiceUltimo] = procesoActual;
+			bloqueados.Add(procesoActual);
+			ejecucion.Remove(procesoActual);
 
-            var indiceActual = loteActual.getListaProcesos().IndexOf(procesoActual);
-
-            loteActual.getListaProcesos()[indiceActual] = tmp;
-
-            procesoActual = tmp;
+			siguienteProceso(true);			
         }    
 
 		private void cambiarEstadoGUI()
@@ -281,9 +305,9 @@ namespace SSO_Practica01_Proceso_lotes
 
             else if (estaCorriendo && e.Key == Key.W)
             {
-				globalMaximo -= procesoActual.ETA;
+				globalMaximo -= procesoActual.TME;
                 siguienteProceso();
-                procesoAnterior.Resultado = "Error";
+                procesoAnterior.Res = "Error";
 				txbMaximoGlobal.Text = segsToTime(globalMaximo);
             }
             else if (estaCorriendo && e.Key == Key.P)
@@ -303,7 +327,7 @@ namespace SSO_Practica01_Proceso_lotes
 
             else if ( estaCorriendo && e.Key == Key.E)
             {
-                mandarAlUltimo();
+                mandarBloqueado();
             }
         }
     }
@@ -313,87 +337,83 @@ namespace SSO_Practica01_Proceso_lotes
 		public static int idProceso = 1;
 
 		public int Id { get; set; }
-		public String Programador { get; set; }
-		public String Operador1 { get; set; }
-		public String Operacion { get; set; }
-		public String Operador2 { get; set; }
-		public string Resultado { get; set; }
-		public int ETA { get; set; }
+		//public String Programador { get; set; }
+		public String Op1 { get; set; }
+		public String Op { get; set; }
+		public String Op2 { get; set; }
+		public string Res { get; set; }		
 		public bool Termino { get; set; }
+		public int TME { get; set; }
+		public int TL { get; set; }
+		public int TFin { get; set; }
+		public int TRet { get; set; }
+		public int TResp { get; set; }
+		public int TEsp { get; set; }
+		public int TSer { get; set; }
+		public int Bloq { get; set; }
+		private int servidoPrimeraVez = -1;
 
-		public Proceso(String Programador, String operacion, String operador1, String operador2, int ETA)
+		public Proceso(String Programador, String Op, String Op1, String Op2, int ETA)
 		{
 			this.Id = idProceso;
 			//this.Id = id;
-			this.Programador = Programador;
-			this.Operacion = operacion;
-			this.Operador1 = operador1;
-			this.Operador2 = operador2;
-			this.ETA = ETA;
+			//this.Programador = Programador;
+			this.Op = Op;
+			this.Op1 = Op1;
+			this.Op2 = Op2;
+			this.TME = ETA;
 			this.Termino = false;
 			idProceso++;
 		}
 
+		public void termino(int tiempoActual)
+		{
+			this.Termino = true;
+			this.TFin = tiempoActual;
+			this.TRet = this.TFin - this.TL;
+			this.TResp = this.TL;
+		}
+
+		public void ejecuto(int tiempoActual)
+		{
+			if (servidoPrimeraVez == -1)
+				servidoPrimeraVez = tiempoActual;
+
+			this.TResp = servidoPrimeraVez - TL;
+		}
+
 		public void resolverEcuacion()
 		{
-			int op1 = int.Parse(Operador1),
-				op2 = int.Parse(Operador2);
+			int op1 = int.Parse(Op1),
+				op2 = int.Parse(Op2);
 
-			switch (Operacion)
+			switch (Op)
 			{
 				case "+":
-					Resultado = (op1 + op2).ToString();
+					Res = (op1 + op2).ToString();
 					break;
 				case "-":
-					Resultado = (op1 - op2).ToString();
+					Res = (op1 - op2).ToString();
 					break;
 				case "*":
-					Resultado = (op1 * op2).ToString();
+					Res = (op1 * op2).ToString();
 					break;
 				case "/":
-					Resultado = (op1 / op2).ToString();
+					Res = (op1 / op2).ToString();
 					break;
 				case "%":
-					Resultado = (op1 % op2).ToString();
+					Res = (op1 % op2).ToString();
 					break;
 				case "^":
-					Resultado = (op1 ^ op2).ToString();
+					Res = (op1 ^ op2).ToString();
 					break;
 				case "%%":
-					Resultado = ((op1 / 100) * op2).ToString();
+					Res = ((op1 / 100) * op2).ToString();
 					break;
 				default:
-					Resultado = (-1).ToString();
+					Res = (-1).ToString();
 					break;
 			}
 		}
-	}
-
-	class Lote
-	{
-		public static int idLote = 1;
-
-		public int Id { get; set; }
-		public int ETA { get; set; }
-		public bool Termino { get; set; }
-
-		private List<Proceso> listaProcesos;
-
-		public Lote()
-		{
-			this.listaProcesos = new List<Proceso>();
-			this.Id = idLote;
-			this.ETA = 0;
-
-			idLote++;
-		}
-
-		public void setProceso(Proceso proceso)
-		{
-			ETA = ETA + proceso.ETA;
-			listaProcesos.Add(proceso);
-		}
-
-		public List<Proceso> getListaProcesos() { return this.listaProcesos; }
 	}
 }
