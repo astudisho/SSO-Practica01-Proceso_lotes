@@ -133,7 +133,7 @@ namespace SSO_Practica01_Proceso_lotes
 				if(proceso.Bloq <= 0 )
 				{
 					liberados.Add(proceso);
-				}
+			}
 			}
 
 			foreach (var liberado in liberados)
@@ -144,16 +144,16 @@ namespace SSO_Practica01_Proceso_lotes
 		}
 
 		private void siguienteProceso( bool bloqueado = false)
-		{
+				{
 			if (!bloqueado)
 			{
 				procesoActual.termino(segundos);
 				terminados.Add(procesoActual);
-			}
+				}
 			ejecucion.Remove(procesoActual);
 
 			if (listos.Count > 0)
-			{
+				{
 				procesoActual = listos[0];
 
 				listos.Remove(procesoActual);
@@ -169,15 +169,15 @@ namespace SSO_Practica01_Proceso_lotes
 			}
 			else if (bloqueados.Count <= 0)
 			{
-				dt.Stop();				
-				cambiarEstadoDataGrid();
-				txbEstado.Text = "Terminado";
-				yaTermino = true;
-			}			
+					dt.Stop();
+					cambiarEstadoDataGrid();
+					txbEstado.Text = "Terminado";
+					yaTermino = true;
+				}
 
 			actualizaGridView();
 
-		}
+			}
 
 		private void btnIniciarCronometro_Click(object sender, RoutedEventArgs e)
 		{
