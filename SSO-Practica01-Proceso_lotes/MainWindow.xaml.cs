@@ -24,10 +24,8 @@ namespace SSO_Practica01_Proceso_lotes
 	public partial class MainWindow : Window
 	{
 			//Practica 03
-		public static int segundos = 0;
-		public static int tiempoTranscurrido = 0;
-		public static int globalMaximo = 0;
-		public const int MAX_PROCESOS_LOTE = 5, TIEMPO_BLOQUEADO = 8;
+		public static int segundos = 0, tiempoTranscurrido = 0, globalMaximo = 0, numProcesosMemoria = 0;
+		public const int MAX_PROCESOS_MEMORIA = 5, TIEMPO_BLOQUEADO = 8;
 
 		private List<int> listaId;
 		private List<Proceso> fcsf, nuevos, listos, bloqueados, terminados, ejecucion;
@@ -89,6 +87,7 @@ namespace SSO_Practica01_Proceso_lotes
 			tiempoMaxEstimado = 0;
 
 			actualizaGridView();
+
 		}
 
 		private void dispatcherTimer_Tick(object sender, EventArgs e)
@@ -97,6 +96,20 @@ namespace SSO_Practica01_Proceso_lotes
 
 			txbCronometro.Text = segsToTime(segundos);
 
+			tiempoTranscurrido++;
+
+			txbTranscurrido.Text = segsToTime(tiempoTranscurrido);
+
+			actualizaGridView();
+
+			//Calcula procesos en memoria
+			numProcesosMemoria = ejecucion.Count + listos.Count + bloqueados.Count;
+
+			procesaBloqueados();
+
+			if (ejecucion.Count == 0 && listos.Count == 0)
+				return;
+
 			//En ejecucion
 			procesoActual.TSer++;
 
@@ -104,22 +117,20 @@ namespace SSO_Practica01_Proceso_lotes
 
 			txbRestante.Text = segsToTime(restante);
 
-			txbTranscurrido.Text = segsToTime(tiempoTranscurrido);
-
 			procesoActual.TME --;
-			tiempoTranscurrido++;
-
 
 			if (procesoActual.TME <= 0)
 			{
 				siguienteProceso();
 			}
-
-			procesaBloqueados();
-
-			actualizaGridView();
+			else if (numProcesosMemoria < MAX_PROCESOS_MEMORIA)
+				siguienteProceso();
 
 			//dgvProcesos.Items.Refresh();
+
+			//Asigna tiempo de espera
+			foreach (var proceso in listos)
+				proceso.TEsp += 1;
 		}
 
 		private void procesaBloqueados()
@@ -133,34 +144,41 @@ namespace SSO_Practica01_Proceso_lotes
 				if(proceso.Bloq <= 0 )
 				{
 					liberados.Add(proceso);
-			}
+				}
 			}
 
 			foreach (var liberado in liberados)
 			{
 				bloqueados.Remove(liberado);
-				listos.Add(liberado);
+
+				if (liberado.TME > 0)
+					listos.Add(liberado);
 			}
 		}
 
 		private void siguienteProceso( bool bloqueado = false)
-				{
+		{
+			numProcesosMemoria = ejecucion.Count + listos.Count + bloqueados.Count;
+
 			if (!bloqueado)
 			{
 				procesoActual.termino(segundos);
-				terminados.Add(procesoActual);
-				}
+
+				if(!terminados.Contains(procesoActual))
+					terminados.Add(procesoActual);
+			}
 			ejecucion.Remove(procesoActual);
 
 			if (listos.Count > 0)
-				{
+			{
 				procesoActual = listos[0];
 
 				listos.Remove(procesoActual);
 
-				if (nuevos.Count > 0)
+				if (nuevos.Count > 0 && numProcesosMemoria < MAX_PROCESOS_MEMORIA)
 				{
 					listos.Add(nuevos[0]);
+					nuevos[0].TL = segundos;
 					nuevos.Remove(nuevos[0]);
 				}
 
@@ -169,15 +187,15 @@ namespace SSO_Practica01_Proceso_lotes
 			}
 			else if (bloqueados.Count <= 0)
 			{
-					dt.Stop();
-					cambiarEstadoDataGrid();
-					txbEstado.Text = "Terminado";
-					yaTermino = true;
-				}
+				dt.Stop();
+				cambiarEstadoDataGrid();
+				txbEstado.Text = "Terminado";
+				yaTermino = true;
+			}
 
 			actualizaGridView();
 
-			}
+		}
 
 		private void btnIniciarCronometro_Click(object sender, RoutedEventArgs e)
 		{
@@ -278,9 +296,14 @@ namespace SSO_Practica01_Proceso_lotes
 
         private void mandarBloqueado()
         {
+			if (procesoActual == null)
+				return;
+
 			procesoActual.Bloq = TIEMPO_BLOQUEADO;
 
-			bloqueados.Add(procesoActual);
+			if(!bloqueados.Contains(procesoActual) && procesoActual.TME > 0)
+				bloqueados.Add(procesoActual);
+
 			ejecucion.Remove(procesoActual);
 
 			siguienteProceso(true);			
@@ -329,6 +352,11 @@ namespace SSO_Practica01_Proceso_lotes
             {
                 mandarBloqueado();
             }
+
+			else if( estaCorriendo && e.Key == Key.D)
+			{
+				MessageBox.Show( numProcesosMemoria.ToString() + "\n" + ejecucion.Count.ToString());
+			}
         }
     }
 
@@ -371,15 +399,19 @@ namespace SSO_Practica01_Proceso_lotes
 			this.Termino = true;
 			this.TFin = tiempoActual;
 			this.TRet = this.TFin - this.TL;
-			this.TResp = this.TL;
+			//this.TResp = this.TL;
 		}
 
 		public void ejecuto(int tiempoActual)
 		{
 			if (servidoPrimeraVez == -1)
+			{
 				servidoPrimeraVez = tiempoActual;
+				this.TResp = servidoPrimeraVez;
+			}
 
-			this.TResp = servidoPrimeraVez - TL;
+
+			//this.TResp = servidoPrimeraVez - TL;
 		}
 
 		public void resolverEcuacion()
