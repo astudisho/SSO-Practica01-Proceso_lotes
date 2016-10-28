@@ -25,16 +25,14 @@ namespace SSO_Practica01_Proceso_lotes
 	{
 			//Practica 03
 		public static int segundos = 0, tiempoTranscurrido = 0, globalMaximo = 0, numProcesosMemoria = 0;
-		public const int MAX_PROCESOS_MEMORIA = 5, TIEMPO_BLOQUEADO = 8;
+		public const int MAX_PROCESOS_MEMORIA = 5, TIEMPO_BLOQUEADO = 8, C_ZERO = 0;
 
 		private List<int> listaId;
 		private List<Proceso> fcsf, nuevos, listos, bloqueados, terminados, ejecucion;
 
 		private Proceso procesoActual;
 		private int tiempoMaxEstimado;
-        private bool estaCorriendo,
-                     estaPausado,
-					 yaTermino;
+        private bool estaCorriendo, estaPausado, yaTermino, esError, esBloqueado;
 
 		DispatcherTimer dt;
 		Random rnd;
@@ -123,14 +121,27 @@ namespace SSO_Practica01_Proceso_lotes
 			{
 				siguienteProceso();
 			}
-			else if (numProcesosMemoria < MAX_PROCESOS_MEMORIA)
-				siguienteProceso();
 
 			//dgvProcesos.Items.Refresh();
 
 			//Asigna tiempo de espera
 			foreach (var proceso in listos)
 				proceso.TEsp += 1;
+
+			
+			if( numProcesosMemoria < MAX_PROCESOS_MEMORIA && nuevos.Count > C_ZERO )
+			{
+				MessageBox.Show(nuevos.Count.ToString());
+				var aux = nuevos[C_ZERO];
+				listos.Add(aux);
+				nuevos.RemoveAt(C_ZERO);
+				aux.TL = segundos;
+			}
+
+			if (esError)
+				terminarEnError();
+			else if (esBloqueado)
+				mandarBloqueado();
 		}
 
 		private void procesaBloqueados()
@@ -156,6 +167,17 @@ namespace SSO_Practica01_Proceso_lotes
 			}
 		}
 
+		private void agregaNuevo()
+		{
+			if (nuevos.Count > 0 && numProcesosMemoria < MAX_PROCESOS_MEMORIA)
+			{
+				var aux = nuevos[0];
+				listos.Add(aux);
+				aux.TL = segundos;
+				nuevos.Remove(aux);
+			}
+		}
+
 		private void siguienteProceso( bool bloqueado = false)
 		{
 			numProcesosMemoria = ejecucion.Count + listos.Count + bloqueados.Count;
@@ -174,13 +196,6 @@ namespace SSO_Practica01_Proceso_lotes
 				procesoActual = listos[0];
 
 				listos.Remove(procesoActual);
-
-				if (nuevos.Count > 0 && numProcesosMemoria < MAX_PROCESOS_MEMORIA)
-				{
-					listos.Add(nuevos[0]);
-					nuevos[0].TL = segundos;
-					nuevos.Remove(nuevos[0]);
-				}
 
 				ejecucion.Add(procesoActual);
 				procesoActual.ejecuto(segundos);
@@ -275,9 +290,9 @@ namespace SSO_Practica01_Proceso_lotes
 			txbMaximoGlobal.Text = segsToTime(globalMaximo);
 		}
 
-		private string segsToTime(int segundos)
+		private string segsToTime(int segs)
 		{
-			return 	(globalMaximo / 60).ToString().PadLeft(2, '0') + ":" + (globalMaximo % 60).ToString().PadLeft(2, '0');
+			return 	(segs / 60).ToString().PadLeft(2, '0') + ":" + (segs % 60).ToString().PadLeft(2, '0');
 		}
 
 		private void dgvLotes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -299,15 +314,16 @@ namespace SSO_Practica01_Proceso_lotes
 			if (procesoActual == null)
 				return;
 
-			procesoActual.Bloq = TIEMPO_BLOQUEADO;
-
-			if(!bloqueados.Contains(procesoActual) && procesoActual.TME > 0)
+			if (!bloqueados.Contains(procesoActual) && procesoActual.TME > 0)
+			{
 				bloqueados.Add(procesoActual);
+				procesoActual.Bloq = TIEMPO_BLOQUEADO;
+			}
 
 			ejecucion.Remove(procesoActual);
-
-			siguienteProceso(true);			
-        }    
+			siguienteProceso(true);
+			esBloqueado = false;
+        }
 
 		private void cambiarEstadoGUI()
 		{
@@ -319,19 +335,23 @@ namespace SSO_Practica01_Proceso_lotes
 			//MessageBox.Show(e.Key.ToString());
 		}
 
+		private void terminarEnError()
+		{
+			globalMaximo -= procesoActual.TME;
+			procesoActual.Res = "Error";
+			siguienteProceso();
+			txbMaximoGlobal.Text = segsToTime(globalMaximo);
+			esError = false;
+		}
+
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            var procesoAnterior = procesoActual;
-
 			if (yaTermino)
 				return;
 
             else if (estaCorriendo && e.Key == Key.W)
             {
-				globalMaximo -= procesoActual.TME;
-                siguienteProceso();
-                procesoAnterior.Res = "Error";
-				txbMaximoGlobal.Text = segsToTime(globalMaximo);
+				esError = true;
             }
             else if (estaCorriendo && e.Key == Key.P)
             {
@@ -350,7 +370,7 @@ namespace SSO_Practica01_Proceso_lotes
 
             else if ( estaCorriendo && e.Key == Key.E)
             {
-                mandarBloqueado();
+				esBloqueado = true;
             }
 
 			else if( estaCorriendo && e.Key == Key.D)
