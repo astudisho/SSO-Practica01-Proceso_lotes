@@ -121,6 +121,8 @@ namespace SSO_Practica01_Proceso_lotes
 			{
 				siguienteProceso();
 			}
+			else if (numProcesosMemoria < MAX_PROCESOS_MEMORIA)
+				siguienteProceso();
 
 			//dgvProcesos.Items.Refresh();
 
