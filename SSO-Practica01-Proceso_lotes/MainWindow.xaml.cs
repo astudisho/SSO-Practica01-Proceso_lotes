@@ -131,7 +131,6 @@ namespace SSO_Practica01_Proceso_lotes
 			
 			if( numProcesosMemoria < MAX_PROCESOS_MEMORIA && nuevos.Count > C_ZERO )
 			{
-				MessageBox.Show(nuevos.Count.ToString());
 				var aux = nuevos[C_ZERO];
 				listos.Add(aux);
 				nuevos.RemoveAt(C_ZERO);
@@ -151,6 +150,7 @@ namespace SSO_Practica01_Proceso_lotes
 			foreach (var proceso in bloqueados)
 			{
 				proceso.Bloq--;
+				proceso.TEsp++;
 
 				if(proceso.Bloq <= 0 )
 				{
